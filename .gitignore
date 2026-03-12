@@ -49,3 +49,50 @@ next-env.d.ts
 .env.development.local
 .env.test.local
 .env.production.local
+
+
+# -----------------
+# Python
+# -----------------
+
+# virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# logs
+*.log
+
+# Jupyter
+.ipynb_checkpoints/
+
+# pytest
+.pytest_cache/
+
+# mypy
+.mypy_cache/
+
+# Ruff / lint
+.ruff_cache/
+
+# -----------------
+# Project data (if generated)
+# -----------------
+data/
+
+# audio / generated media
+*.mp3
+*.wav
+*.flac
