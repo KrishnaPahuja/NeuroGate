@@ -96,3 +96,12 @@ data/
 *.mp3
 *.wav
 *.flac
+
+
+airflow_home/
+airflow_home/logs/
+airflow_home/airflow.db
+
+data/daily_briefing.json
+data/raw_emails.json
+public/briefing.mp3
