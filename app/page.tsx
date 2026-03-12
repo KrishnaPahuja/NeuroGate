@@ -18,6 +18,7 @@ interface ShieldMetrics {
 export default function Home() {
   // Command Center State
   const [inputValue, setInputValue] = useState("");
+  const [audioFormat, setAudioFormat] = useState("narration"); // NEW: Format state
   const [isLoading, setIsLoading] = useState(false);
   const [feedback, setFeedback] = useState("");
 
@@ -61,20 +62,23 @@ export default function Home() {
   // Handle Command Center submission
   const handleUpdatePreference = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputValue.trim()) return;
 
     setIsLoading(true);
     setFeedback("Thinking...");
 
     try {
+      // NEW: Sending both the message AND the audio format
       const response = await fetch('/api/preferences', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: inputValue }),
+        body: JSON.stringify({ 
+          message: inputValue,
+          audio_format: audioFormat
+        }),
       });
       const data = await response.json();
       if (response.ok) {
-        setFeedback(`✅ ${data.message}`);
+        setFeedback(`✅ ${data.message || 'Preferences updated!'}`);
         setInputValue("");
       } else {
         setFeedback(`❌ Error: ${data.error}`);
@@ -194,24 +198,35 @@ export default function Home() {
 
       {/* COMMAND CENTER */}
       <div className="fixed bottom-0 w-full bg-zinc-950/90 backdrop-blur-xl border-t border-zinc-800 p-4">
-        <form onSubmit={handleUpdatePreference} className="max-w-3xl mx-auto">
+        <form onSubmit={handleUpdatePreference} className="max-w-4xl mx-auto">
           {feedback && (
             <div className="text-xs font-mono text-emerald-400 mb-2 ml-2 transition-opacity">
               {feedback}
             </div>
           )}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-3">
+            
+            {/* NEW: The Format Dropdown */}
+            <select 
+              value={audioFormat}
+              onChange={(e) => setAudioFormat(e.target.value)}
+              className="bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-3 text-sm text-zinc-100 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 cursor-pointer"
+            >
+              <option value="narration">Single Narration</option>
+              <option value="podcast">2-Host Podcast</option>
+            </select>
+
             <input 
               type="text" 
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               disabled={isLoading}
-              placeholder="Update preferences (e.g., 'Stop showing me news about cricket')..." 
+              placeholder="Update logic (e.g., 'Stop showing me news about cricket')..." 
               className="flex-1 bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-3 text-sm text-zinc-100 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all placeholder:text-zinc-600 disabled:opacity-50"
             />
             <button 
               type="submit" 
-              disabled={isLoading || !inputValue.trim()}
+              disabled={isLoading} 
               className="bg-zinc-100 text-zinc-950 px-6 py-3 rounded-xl text-sm font-medium hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Update Logic
