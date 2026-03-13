@@ -28,6 +28,7 @@ export default function Home() {
   
   // Audio Player State
   const [isPlaying, setIsPlaying] = useState(false);
+  const [playbackSpeed, setPlaybackSpeed] = useState(1); // 🚀 NEW: Playback speed state
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // Fetch the data when the page loads
@@ -47,14 +48,23 @@ export default function Home() {
     fetchBriefing();
   }, []);
 
-  // 🚀 NEW CHANGE 1: Instantly pause and reload audio when dropdown changes
+  // Instantly pause and reload audio when dropdown changes
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.load();
+      // 🚀 NEW: Re-apply the current speed so it doesn't reset when switching formats!
+      audioRef.current.playbackRate = playbackSpeed;
       setIsPlaying(false);
     }
-  }, [audioFormat]);
+  }, [audioFormat, playbackSpeed]);
+
+  // 🚀 NEW: Apply playback speed whenever the user clicks the speed button
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.playbackRate = playbackSpeed;
+    }
+  }, [playbackSpeed]);
 
   // Handle the Audio Play/Pause button
   const toggleAudio = () => {
@@ -66,6 +76,15 @@ export default function Home() {
       }
       setIsPlaying(!isPlaying);
     }
+  };
+
+  // 🚀 NEW: Function to cycle through speeds (1x -> 1.5x -> 2x -> 1x)
+  const cycleSpeed = () => {
+    setPlaybackSpeed(prev => {
+      if (prev === 1) return 1.5;
+      if (prev === 1.5) return 2;
+      return 1;
+    });
   };
 
   // Handle Command Center submission
@@ -102,7 +121,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-300 font-sans selection:bg-emerald-900 selection:text-emerald-50 pb-24">
       
-      {/* 🚀 NEW CHANGE 2: Dynamic Audio Source pointing to your new dual MP3s */}
+      {/* Dynamic Audio Source pointing to your new dual MP3s */}
       <audio 
         ref={audioRef} 
         src={audioFormat === 'podcast' ? '/podcast.mp3' : '/narration.mp3'} 
@@ -129,9 +148,10 @@ export default function Home() {
           <section className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6">
             <h2 className="text-xs font-bold uppercase tracking-widest text-zinc-500 mb-4">Today's Synthesis</h2>
             <div className="flex items-center space-x-4">
+              
               <button 
                 onClick={toggleAudio}
-                className="w-14 h-14 bg-emerald-500 hover:bg-emerald-400 rounded-full flex items-center justify-center text-zinc-950 transition-colors shadow-lg shadow-emerald-900/20"
+                className="w-14 h-14 bg-emerald-500 hover:bg-emerald-400 rounded-full flex items-center justify-center text-zinc-950 transition-colors shadow-lg shadow-emerald-900/20 shrink-0"
               >
                 {isPlaying ? (
                    // Pause Icon
@@ -141,13 +161,22 @@ export default function Home() {
                   <svg className="w-6 h-6 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                 )}
               </button>
+
+              {/* 🚀 NEW: The Speed Toggle Button */}
+              <button 
+                onClick={cycleSpeed}
+                className="h-8 px-3 rounded-full bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-xs font-mono text-zinc-300 transition-colors shrink-0"
+                title="Playback Speed"
+              >
+                {playbackSpeed}x
+              </button>
+
               <div className="flex-1">
                 <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
                   <div className={`h-full bg-emerald-500 rounded-full transition-all duration-1000 ${isPlaying ? 'w-full' : 'w-0'}`}></div>
                 </div>
                 <div className="flex justify-between text-xs text-zinc-500 mt-2 font-mono">
                   <span>{isPlaying ? "Playing..." : "Ready"}</span>
-                  {/* 🚀 NEW CHANGE 3: Dynamic Label */}
                   <span>{audioFormat === 'podcast' ? '2-Host Podcast' : 'Single Narration'}</span>
                 </div>
               </div>
