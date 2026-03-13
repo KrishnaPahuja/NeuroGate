@@ -131,7 +131,7 @@ export default function Home() {
       {/* 2. HEADER: Light and frosty */}
       <header className="border-b border-slate-200 p-6 flex justify-between items-center bg-white/80 backdrop-blur-md sticky top-0 z-10">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">Cognitive Shield</h1>
+          <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">NeuroGate</h1>
           <p className="text-sm text-slate-500 mt-1">Your Daily Signal. Zero Noise.</p>
         </div>
         <div className="text-xs font-mono bg-white px-3 py-1 rounded-full border border-slate-200 text-teal-600 shadow-sm">

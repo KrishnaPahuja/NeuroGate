@@ -23,7 +23,7 @@ def load_json(filepath):
 
 async def generate_narration(briefing_items):
     print("🎙️ Generating Single-Voice Narration...")
-    script = "Welcome to your Cognitive Shield daily briefing. Here is your synthesized signal, with zero noise.\n\n"
+    script = "Welcome to your Neuro Gate daily briefing. Here is your synthesized signal, with zero noise.\n\n"
     
     for idx, item in enumerate(briefing_items):
         script += f"Update {idx + 1}: {item['title']}. \n"
@@ -79,7 +79,7 @@ async def generate_podcast(podcast_script):
     print(f"✅ Podcast successfully saved to {PODCAST_FILE}")
 
 async def generate_audio():
-    print("🎧 Booting up Cognitive Shield Audio Generator...")
+    print("🎧 Booting up Neuro Gate Audio Generator...")
     
     data = load_json(INPUT_FILE)
     

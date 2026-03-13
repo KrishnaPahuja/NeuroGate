@@ -19,7 +19,7 @@ def load_json(filepath):
     return None
 
 def run_shield_engine():
-    print("🧠 Booting up Cognitive Shield Engine...")
+    print("🧠 Booting up Neuro Gate Engine...")
 
     # 1. Load the data
     emails = load_json(RAW_EMAILS_FILE)
