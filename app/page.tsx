@@ -18,7 +18,7 @@ interface ShieldMetrics {
 export default function Home() {
   // Command Center State
   const [inputValue, setInputValue] = useState("");
-  const [audioFormat, setAudioFormat] = useState("narration"); // NEW: Format state
+  const [audioFormat, setAudioFormat] = useState("narration"); // Format state
   const [isLoading, setIsLoading] = useState(false);
   const [feedback, setFeedback] = useState("");
 
@@ -47,6 +47,15 @@ export default function Home() {
     fetchBriefing();
   }, []);
 
+  // 🚀 NEW CHANGE 1: Instantly pause and reload audio when dropdown changes
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.load();
+      setIsPlaying(false);
+    }
+  }, [audioFormat]);
+
   // Handle the Audio Play/Pause button
   const toggleAudio = () => {
     if (audioRef.current) {
@@ -67,7 +76,6 @@ export default function Home() {
     setFeedback("Thinking...");
 
     try {
-      // NEW: Sending both the message AND the audio format
       const response = await fetch('/api/preferences', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -94,10 +102,10 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-300 font-sans selection:bg-emerald-900 selection:text-emerald-50 pb-24">
       
-      {/* Hidden Audio Element pointing to your generated MP3 */}
+      {/* 🚀 NEW CHANGE 2: Dynamic Audio Source pointing to your new dual MP3s */}
       <audio 
         ref={audioRef} 
-        src="/briefing.mp3" 
+        src={audioFormat === 'podcast' ? '/podcast.mp3' : '/narration.mp3'} 
         onEnded={() => setIsPlaying(false)} 
       />
 
@@ -139,7 +147,8 @@ export default function Home() {
                 </div>
                 <div className="flex justify-between text-xs text-zinc-500 mt-2 font-mono">
                   <span>{isPlaying ? "Playing..." : "Ready"}</span>
-                  <span>Neural Audio</span>
+                  {/* 🚀 NEW CHANGE 3: Dynamic Label */}
+                  <span>{audioFormat === 'podcast' ? '2-Host Podcast' : 'Single Narration'}</span>
                 </div>
               </div>
             </div>
@@ -206,7 +215,7 @@ export default function Home() {
           )}
           <div className="flex items-center space-x-3">
             
-            {/* NEW: The Format Dropdown */}
+            {/* The Format Dropdown */}
             <select 
               value={audioFormat}
               onChange={(e) => setAudioFormat(e.target.value)}

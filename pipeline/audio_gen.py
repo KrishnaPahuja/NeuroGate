@@ -6,9 +6,11 @@ import edge_tts
 # Paths
 DATA_DIR = '../data'
 INPUT_FILE = os.path.join(DATA_DIR, 'daily_briefing.json')
-PREFS_FILE = os.path.join(DATA_DIR, 'preferences.json')
 PUBLIC_DIR = '../public'
-OUTPUT_FILE = os.path.join(PUBLIC_DIR, 'briefing.mp3')
+
+# THE CHANGE: Define our two output files instead of one
+NARRATION_FILE = os.path.join(PUBLIC_DIR, 'narration.mp3')
+PODCAST_FILE = os.path.join(PUBLIC_DIR, 'podcast.mp3')
 
 # Temporary folder to hold the individual dialogue clips before stitching
 TEMP_DIR = os.path.join(DATA_DIR, 'temp_audio')
@@ -33,8 +35,8 @@ async def generate_narration(briefing_items):
     os.makedirs(PUBLIC_DIR, exist_ok=True)
     
     communicate = edge_tts.Communicate(script, VOICE)
-    await communicate.save(OUTPUT_FILE)
-    print(f"✅ Narration successfully saved to {OUTPUT_FILE}")
+    await communicate.save(NARRATION_FILE)  # Saves as narration.mp3
+    print(f"✅ Narration successfully saved to {NARRATION_FILE}")
 
 async def generate_podcast(podcast_script):
     print("🎙️ Generating 2-Host Podcast...")
@@ -64,40 +66,42 @@ async def generate_podcast(podcast_script):
         
     # 2. Stitch them together using binary concatenation
     print("🎧 Stitching chunks together into master podcast track...")
-    with open(OUTPUT_FILE, 'wb') as outfile:
+    with open(PODCAST_FILE, 'wb') as outfile:  # Saves as podcast.mp3
         for temp_file in temp_files:
             with open(temp_file, 'rb') as infile:
                 outfile.write(infile.read())
                 
-    # 3. Clean up the temporary files so we don't clutter your hard drive
+    # 3. Clean up the temporary files
     for temp_file in temp_files:
         os.remove(temp_file)
     os.rmdir(TEMP_DIR)
         
-    print(f"✅ Podcast successfully saved to {OUTPUT_FILE}")
+    print(f"✅ Podcast successfully saved to {PODCAST_FILE}")
 
 async def generate_audio():
     print("🎧 Booting up Cognitive Shield Audio Generator...")
     
     data = load_json(INPUT_FILE)
-    prefs = load_json(PREFS_FILE)
     
     if not data:
         print("❌ No briefing data found. Run shield_engine.py first.")
         return
+
+    os.makedirs(PUBLIC_DIR, exist_ok=True)
     
-    # Figure out which format the user wants
-    audio_format = prefs.get('audio_format', 'narration') if prefs else 'narration'
     briefing_items = data.get('briefing_items', [])
     podcast_script = data.get('podcast_script', [])
     
-    # Route to the correct audio engine
-    if audio_format == "podcast" and podcast_script:
-        await generate_podcast(podcast_script)
-    elif briefing_items:
+    # THE BIG CHANGE: Run BOTH generators sequentially!
+    if briefing_items:
         await generate_narration(briefing_items)
     else:
-        print("📭 Briefing is empty. Nothing to narrate.")
+        print("📭 No standard briefing items found.")
+        
+    if podcast_script:
+        await generate_podcast(podcast_script)
+    else:
+        print("📭 No podcast script found.")
 
 if __name__ == "__main__":
     asyncio.run(generate_audio())

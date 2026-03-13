@@ -29,12 +29,9 @@ def run_shield_engine():
         print("📭 No raw emails found to process. Run ingest.py first.")
         return
 
-    # Extract preferences
+    # Extract preferences (We removed the audio_format check here!)
     blocked_topics = prefs.get('blocked_topics', []) if prefs else []
-    audio_format = prefs.get('audio_format', 'narration') if prefs else 'narration'
-    
     print(f"🛡️ Active Filters (Blocked Topics): {blocked_topics}")
-    print(f"🎙️ Target Audio Format: {audio_format}")
 
     # 2. Format the payload for the LLM
     email_text_payload = ""
@@ -44,18 +41,7 @@ def run_shield_engine():
     # 3. Connect to Groq
     client = Groq(api_key=os.getenv('GROQ_API_KEY'))
 
-    # DYNAMIC INSTRUCTIONS: Tell Groq how to behave based on the UI dropdown
-    if audio_format == "podcast":
-        format_instructions = """
-        You must ALSO write a 2-host podcast script discussing these updates.
-        The hosts are Alex and Sam. Make it conversational, engaging, and professional.
-        Add a "podcast_script" array to the JSON output, containing objects with "speaker" and "text" keys.
-        """
-    else:
-        format_instructions = """
-        Provide a "podcast_script" key but leave it as an empty array [].
-        """
-
+    # THE BIG CHANGE: We tell it to ALWAYS generate the podcast script alongside the normal data.
     system_prompt = f"""
     You are an elite data de-biasing engine. Your job is to read raw tech newsletters and output a clean, neutral daily briefing.
     
@@ -64,8 +50,7 @@ def run_shield_engine():
     2. DE-DUPLICATION: If multiple emails talk about the same event, merge them into ONE summary point.
     3. DE-BIASING: Remove all marketing jargon, promotional adjectives, and corporate bias. Keep only objective engineering/tech facts.
     4. METRICS: Keep track of how many duplicate stories you merged and how many marketing words/jargon you removed.
-
-    {format_instructions}
+    5. PODCAST: You must ALSO write a 2-host podcast script discussing these updates. The hosts are Alex and Sam. Make it conversational, engaging, and professional.
 
     OUTPUT FORMAT:
     You must output ONLY valid JSON. Use this exact schema:
@@ -104,7 +89,7 @@ def run_shield_engine():
                 {"role": "user", "content": email_text_payload}
             ],
             model="llama-3.3-70b-versatile",
-            temperature=0.2, # Bumped to 0.2 so the podcast dialogue is slightly more conversational
+            temperature=0.2, 
             response_format={"type": "json_object"} 
         )
 
